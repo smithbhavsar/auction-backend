@@ -119,24 +119,24 @@ app.get('/players', (req, res) => {
     res.json(randomizedPlayers);
 });
 
-function resetAuction() {
-    randomizedPlayers = players.sort(() => Math.random() - 0.5); // Randomize players again
-    currentPlayerIndex = 0;
-    currentPlayer = randomizedPlayers[currentPlayerIndex];
-    passedPlayers = [];
-    captains.forEach(captain => {
-        captain.team = [];
-        captain.points = 1500; // Reset captain points
-    });
+// function resetAuction() {
+//     randomizedPlayers = players.sort(() => Math.random() - 0.5); // Randomize players again
+//     currentPlayerIndex = 0;
+//     currentPlayer = randomizedPlayers[currentPlayerIndex];
+//     passedPlayers = [];
+//     captains.forEach(captain => {
+//         captain.team = [];
+//         captain.points = 1500; // Reset captain points
+//     });
 
-    // Reset all players to available (sold: false)
-    allPlayers.forEach(player => {
-        player.sold = false; // Mark all players as available
-    });
+//     // Reset all players to available (sold: false)
+//     allPlayers.forEach(player => {
+//         player.sold = false; // Mark all players as available
+//     });
 
-    io.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
-    io.emit('bidUpdate', { allPlayers }); // Emit updated allPlayers to clients
-}
+//     io.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
+//     io.emit('bidUpdate', { allPlayers }); // Emit updated allPlayers to clients
+// }
 
 
 io.on('connection', (socket) => {
@@ -153,9 +153,9 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on('resetAuction', () => {
-        resetAuction(); // Reset the auction and emit the start data again
-    });
+    // socket.on('resetAuction', () => {
+    //     resetAuction(); // Reset the auction and emit the start data again
+    // });
 
     socket.on('placeBid', (bid, captainId) => {
         const captain = captains.find(c => c.id === captainId);
