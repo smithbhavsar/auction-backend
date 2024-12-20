@@ -119,6 +119,18 @@ app.get('/players', (req, res) => {
     res.json(randomizedPlayers);
 });
 
+function resetAuction() {
+    randomizedPlayers = players.sort(() => Math.random() - 0.5); // Randomize players again
+    currentPlayerIndex = 0;
+    currentPlayer = randomizedPlayers[currentPlayerIndex];
+    passedPlayers = [];
+    captains.forEach(captain => {
+        captain.team = [];
+        captain.points = 1500; // Reset captain points
+    });
+    io.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
+}
+
 io.on('connection', (socket) => {
     console.log('A user connected');
 
@@ -131,6 +143,10 @@ io.on('connection', (socket) => {
             captains, 
             currentPlayer
         });
+    });
+
+    socket.on('resetAuction', () => {
+        resetAuction(); // Reset the auction and emit the start data again
     });
 
     socket.on('placeBid', (bid, captainId) => {
