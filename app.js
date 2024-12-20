@@ -128,8 +128,16 @@ function resetAuction() {
         captain.team = [];
         captain.points = 1500; // Reset captain points
     });
+
+    // Reset all players to available (sold: false)
+    allPlayers.forEach(player => {
+        player.sold = false; // Mark all players as available
+    });
+
     io.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
+    io.emit('bidUpdate', { allPlayers }); // Emit updated allPlayers to clients
 }
+
 
 io.on('connection', (socket) => {
     console.log('A user connected');
