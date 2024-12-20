@@ -68,11 +68,9 @@ let captains = [
     { id: 3, name: 'Deval Ajmera', points: 1500, team: [] },
     { id: 4, name: 'Aalap Shah', points: 1500, team: [] },
     { id: 5, name: 'Parth Gurjar', points: 1500, team: [] },
-  ];
+];
 
 allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
-
-// Remove captains from the players list
 players = players.filter(player => !captains.some(captain => captain.name === player.name));
 
 let randomizedPlayers = players.sort(() => Math.random() - 0.5);
@@ -81,99 +79,72 @@ let currentPlayerIndex = 0;
 let currentPlayer = randomizedPlayers[currentPlayerIndex];
 let passedPlayers = [];
 
-// API to add a player
+// POST endpoint to add a new player
 app.post('/players', (req, res) => {
     const { name, house, age, mobile } = req.body;
-    const newPlayer = { name, house, age, mobile, sold: false }; // Add sold property
+    const newPlayer = { name, house, age, mobile, sold: false };
     players.push(newPlayer);
-    allPlayers.push({ ...newPlayer }); // Update allPlayers as well
+    allPlayers.push({ ...newPlayer });
     res.status(201).json(newPlayer);
 });
 
-// Get all players (for the players list page)
+// GET endpoint to get all players
 app.get('/all-players', (req, res) => {
     res.json(allPlayers);
 });
 
-// Get random players for auction
+// GET endpoint to get players for auction
 app.get('/players', (req, res) => {
     res.json(randomizedPlayers);
 });
 
-io.on('connection', (socket) => {
-    console.log('A user connected');
+app.get('/auction-start', (req, res) => {
+    res.json({ randomizedPlayers, captains, currentPlayer });
+});
 
-    socket.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
+app.post('/place-bid', (req, res) => {
+    const { bid, captainId } = req.body;
+    const captain = captains.find(c => c.id === captainId);
 
-    socket.on('getAuctionData', () => {
-        // Send the auction data to the client when requested
-        socket.emit('auctionStart', {
-            randomizedPlayers, 
-            captains, 
-            currentPlayer
-        });
-    });
-
-    socket.on('placeBid', (bid, captainId) => {
-        const captain = captains.find(c => c.id === captainId);
-
-        if (captain.team.length >= 6) {
-            socket.emit('errorMessage', 'You can only buy 6 players');
-            return;
-          }
-
-        if (bid > captain.points) {
-            socket.emit('errorMessage', 'Not enough points to place this bid!');
-        } else {
-            captain.points -= bid;
-
-            currentPlayer.sold = true;
-            const allPlayersIndex = allPlayers.findIndex(p => p.name === currentPlayer.name);
-            if (allPlayersIndex !== -1) {
-                allPlayers[allPlayersIndex].sold = true;
-            }
-
-            captain.team.push({ player: currentPlayer, bid });
-            io.emit('bidUpdate', { captains, currentPlayer, allPlayers });
-
-            moveToNextPlayer();
-        }
-    });  
-
-    socket.on('passPlayer', () => {
-        console.log('Player passed:', currentPlayer.name);
-        passedPlayers.push(currentPlayer);
-
-        moveToNextPlayer();
-    });
-
-    function moveToNextPlayer() {
-        currentPlayerIndex++;
-    
-        if (currentPlayerIndex < randomizedPlayers.length) {
-            currentPlayer = randomizedPlayers[currentPlayerIndex];
-            io.emit('nextPlayer', currentPlayer);
-        } else if (passedPlayers.length > 0) {
-            console.log('All players shown once. Revisiting passed players...');
-            randomizedPlayers = [...passedPlayers]; // Reassign with passed players
-            passedPlayers = []; // Reset passed players
-            currentPlayerIndex = 0; // Restart index
-            currentPlayer = randomizedPlayers[currentPlayerIndex]; // Set next player
-            io.emit('nextPlayer', currentPlayer);
-        } else {
-            currentPlayer = null;
-            console.log('Auction Ended');
-            io.emit('auctionEnd'); 
-        }
+    if (captain.team.length >= 6) {
+        return res.status(400).json({ message: 'You can only buy 6 players' });
     }
 
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
+    if (bid > captain.points) {
+        return res.status(400).json({ message: 'Not enough points to place this bid!' });
+    } else {
+        captain.points -= bid;
+        currentPlayer.sold = true;
+        const allPlayersIndex = allPlayers.findIndex(p => p.name === currentPlayer.name);
+        if (allPlayersIndex !== -1) {
+            allPlayers[allPlayersIndex].sold = true;
+        }
+        captain.team.push({ player: currentPlayer, bid });
+        moveToNextPlayer();
+        return res.status(200).json({ captains, currentPlayer, allPlayers });
+    }
 });
 
-const PORT = process.env.PORT || 3001;
-
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+// Endpoint to pass the current player
+app.post('/pass-player', (req, res) => {
+    passedPlayers.push(currentPlayer);
+    moveToNextPlayer();
+    res.status(200).json({ currentPlayer });
 });
+
+function moveToNextPlayer() {
+    currentPlayerIndex++;
+
+    if (currentPlayerIndex < randomizedPlayers.length) {
+        currentPlayer = randomizedPlayers[currentPlayerIndex];
+    } else if (passedPlayers.length > 0) {
+        randomizedPlayers = [...passedPlayers];
+        passedPlayers = [];
+        currentPlayerIndex = 0;
+        currentPlayer = randomizedPlayers[currentPlayerIndex];
+    } else {
+        currentPlayer = null;
+    }
+}
+
+module.exports = app;
