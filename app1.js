@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: 'https://indraprasth-cricket-auction.netlify.app/',
+        origin: 'http://localhost:3000',
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type'],
         credentials: true,
@@ -15,7 +15,7 @@ const io = socketIo(server, {
 });
 
 app.use(cors({
-    origin: 'https://indraprasth-cricket-auction.netlify.app/',
+    origin: 'http://localhost:3000',
     credentials: true,
 }));
 app.use(express.json());
@@ -70,25 +70,13 @@ let captains = [
     { id: 5, name: 'Parth Gurjar', points: 1500, team: [] },
   ];
 
-allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
-
 // Remove captains from the players list
 players = players.filter(player => !captains.some(captain => captain.name === player.name));
 
-let randomizedPlayers = players.sort(() => Math.random() - 0.5);
+const randomizedPlayers = players.sort(() => Math.random() - 0.5);
 
 let currentPlayerIndex = 0;
 let currentPlayer = randomizedPlayers[currentPlayerIndex];
-let passedPlayers = [];
-
-// API to add a player
-app.post('/players', (req, res) => {
-    const { name, house, age, mobile } = req.body;
-    const newPlayer = { name, house, age, mobile, sold: false }; // Add sold property
-    players.push(newPlayer);
-    allPlayers.push({ ...newPlayer }); // Update allPlayers as well
-    res.status(201).json(newPlayer);
-});
 
 // Get all players (for the players list page)
 app.get('/all-players', (req, res) => {
@@ -101,32 +89,19 @@ app.get('/players', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
+    console.log('a user connected');
 
     socket.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
-
-    socket.on('getAuctionData', () => {
-        // Send the auction data to the client when requested
-        socket.emit('auctionStart', {
-            randomizedPlayers, 
-            captains, 
-            currentPlayer
-        });
-    });
 
     socket.on('placeBid', (bid, captainId) => {
         const captain = captains.find(c => c.id === captainId);
 
-        if (captain.team.length >= 6) {
-            socket.emit('errorMessage', 'You can only buy 6 players');
-            return;
-          }
-
         if (bid > captain.points) {
-            socket.emit('errorMessage', 'Not enough points to place this bid!');
+            socket.emit('error', 'Not enough points to place this bid!');
         } else {
             captain.points -= bid;
 
+            // Update sold status in both arrays
             currentPlayer.sold = true;
             const allPlayersIndex = allPlayers.findIndex(p => p.name === currentPlayer.name);
             if (allPlayersIndex !== -1) {
@@ -134,46 +109,33 @@ io.on('connection', (socket) => {
             }
 
             captain.team.push({ player: currentPlayer, bid });
-            io.emit('bidUpdate', { captains, currentPlayer, allPlayers });
+            io.emit('bidUpdate', { captains, currentPlayer, allPlayers }); // Send updated allPlayers
 
-            moveToNextPlayer();
+            currentPlayerIndex++;
+            if (currentPlayerIndex < randomizedPlayers.length) {
+                currentPlayer = randomizedPlayers[currentPlayerIndex];
+                io.emit('nextPlayer', currentPlayer);
+            } else{
+                io.emit('auctionEnd');
+            }
         }
-    });  
-
-    socket.on('passPlayer', () => {
-        console.log('Player passed:', currentPlayer.name);
-        passedPlayers.push(currentPlayer);
-
-        moveToNextPlayer();
     });
 
-    function moveToNextPlayer() {
+    socket.on('passPlayer', () => {
         currentPlayerIndex++;
-    
         if (currentPlayerIndex < randomizedPlayers.length) {
             currentPlayer = randomizedPlayers[currentPlayerIndex];
             io.emit('nextPlayer', currentPlayer);
-        } else if (passedPlayers.length > 0) {
-            console.log('All players shown once. Revisiting passed players...');
-            randomizedPlayers = [...passedPlayers]; // Reassign with passed players
-            passedPlayers = []; // Reset passed players
-            currentPlayerIndex = 0; // Restart index
-            currentPlayer = randomizedPlayers[currentPlayerIndex]; // Set next player
-            io.emit('nextPlayer', currentPlayer);
-        } else {
-            currentPlayer = null;
-            console.log('Auction Ended');
-            io.emit('auctionEnd'); 
+        } else{
+            io.emit('auctionEnd');
         }
-    }
+    });
 
     socket.on('disconnect', () => {
-        console.log('User disconnected');
+        console.log('user disconnected');
     });
 });
 
-const PORT = process.env.PORT || 3001;
-
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(3001, () => {
+    console.log('Server running on http://localhost:3001');
 });
