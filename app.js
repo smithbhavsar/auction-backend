@@ -63,7 +63,6 @@ let players = [
   { name: "Kushal Patel", house: "B/403", age: 36, mobile: "8238053118", baseValue: 0 },
   { name: "Karan Shah", house: "D/303", age: 35, mobile: "9033225454", baseValue: 0 },
   { name: "Sagar Shah", house: "F/504", age: 38, mobile: "9724506844", baseValue: 0 },
-  { name: "Parth V Gurjar", house: "E/104", age: 44, mobile: "9879555098", baseValue: 0 },
   { name: "Aalap Shah", house: "C/303", age: 44, mobile: "9913957575", baseValue: 0 },
   { name: "Deval Shah", house: "C/304", age: 32, mobile: "9426548918", baseValue: 0 },
   { name: "Amit Shah", house: "F/402", age: 50, mobile: "9375202158", baseValue: 0 },
