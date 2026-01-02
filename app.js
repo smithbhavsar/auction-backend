@@ -39,7 +39,7 @@ app.use(express.json());
 let players = [
   { name: "Akshat Shah", house: "C/401", age: 16, mobile: "9106729889", baseValue: 0 },
   { name: "Hetal Thakkar", house: "A/101", age: 49, mobile: "9825264485", baseValue: 0 },
-  { name: "Rohan Shah", house: "F/402", age: 18, mobile: "6355447315", baseValue: 0 },
+  { name: "Aalap Shah", house: "C/303", age: 44, mobile: "9913957575", baseValue: 0 },
   { name: "Smith Bhavsar", house: "A/502", age: 27, mobile: "9662727571", baseValue: 0 },
   { name: "Dr Samir Savaliya", house: "E/103", age: 39, mobile: "9879887775", baseValue: 0 },
   { name: "Kandarp Patel", house: "A/504", age: 40, mobile: "9824030131", baseValue: 0 },
@@ -82,7 +82,7 @@ let captains = [
     { id: 1, name: 'Smith Bhavsar', points: 3000, team: [] },
     { id: 2, name: 'Heet Shah', points: 3000, team: [] },
     { id: 3, name: 'Deval Ajmera', points: 3000, team: [] },
-    { id: 4, name: 'Aalap Shah', points: 3000, team: [] },
+    { id: 4, name: 'Rohan Shah', points: 3000, team: [] },
     { id: 5, name: 'Parth Gurjar', points: 3000, team: [] },
 ];
 
