@@ -166,6 +166,7 @@ io.on('connection', (socket) => {
             captainId: captain.id,
             maxBid: getMaxAllowedBid(captain)
         });
+    });
 
     socket.on('getAuctionData', () => {
         // Send the auction data to the client when requested
