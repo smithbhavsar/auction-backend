@@ -146,6 +146,12 @@ function getMaxAllowedBid(captain) {
     return captain.points - (slotsLeft - 1) * BASE_VALUE;
 }
 
+function emitPassAvailability() {
+    io.emit('passAvailability', {
+        canPass: !noPlayersLeft()
+    });
+}
+
 // Get all players (for the players list page)
 app.get('/all-players', (req, res) => {
     res.json(allPlayers);
@@ -161,6 +167,8 @@ io.on('connection', (socket) => {
 
     socket.emit('auctionStart', { randomizedPlayers, captains, currentPlayer });
 
+    emitPassAvailability();
+    
     captains.forEach(captain => {
         socket.emit('bidLimits', {
             captainId: captain.id,
@@ -228,16 +236,29 @@ io.on('connection', (socket) => {
     captain.team.push({ player: currentPlayer, bid });
 
     io.emit('bidUpdate', { captains, currentPlayer, allPlayers });
-
+    emitPassAvailability();
     moveToNextPlayer();
 });
 
     socket.on('passPlayer', () => {
+        if (noPlayersLeft()) {
+            socket.emit('errorMessage', 'No players left to pass.');
+            return;
+        }
+    
         console.log('Player passed:', currentPlayer.name);
         passedPlayers.push(currentPlayer);
-
+        
         moveToNextPlayer();
     });
+
+
+    function noPlayersLeft() {
+        return (
+            !currentPlayer ||
+            randomizedPlayers.every(player => player.sold)
+        );
+    }
 
     function moveToNextPlayer() {
         currentPlayerIndex++;
@@ -245,6 +266,7 @@ io.on('connection', (socket) => {
         if (currentPlayerIndex < randomizedPlayers.length) {
             currentPlayer = randomizedPlayers[currentPlayerIndex];
             io.emit('nextPlayer', currentPlayer);
+             emitPassAvailability();
         } else if (passedPlayers.length > 0) {
             console.log('All players shown once. Revisiting passed players...');
             randomizedPlayers = [...passedPlayers]; // Reassign with passed players
@@ -252,10 +274,12 @@ io.on('connection', (socket) => {
             currentPlayerIndex = 0; // Restart index
             currentPlayer = randomizedPlayers[currentPlayerIndex]; // Set next player
             io.emit('nextPlayer', currentPlayer);
+            emitPassAvailability();
         } else {
             currentPlayer = null;
             console.log('Auction Ended');
-            io.emit('auctionEnd'); 
+            io.emit('auctionEnd');
+            emitPassAvailability();
         }
     }
 
