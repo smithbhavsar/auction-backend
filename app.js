@@ -8,7 +8,7 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
     'http://localhost:3000', // Local development
-    'https://indraprasth-cricket-auction.netlify.app', // Netlify deployment
+    'https://rspl-cricket-auction.netlify.app/', // Netlify deployment
     'https://auction-backend-d0xr.onrender.com' // Your Render backend URL
 ];
 
