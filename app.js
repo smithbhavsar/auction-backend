@@ -7,26 +7,31 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-    'http://localhost:3000', // Local development
-    'https://rspl-cricket-auction.netlify.app/', // Netlify deployment
-    'https://auction-backend-d0xr.onrender.com' // Your Render backend URL
+    'http://localhost:3000',
+    'https://rspl-cricket-auction.netlify.app',
+    'https://auction-backend-d0xr.onrender.com'
 ];
 
 // CORS setup for socket.io
 const io = socketIo(server, {
     cors: {
-        origin: allowedOrigins, // Allow multiple origins
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                console.error('Socket.IO CORS blocked origin:', origin);
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ['GET', 'POST'],
-        allowedHeaders: ['Content-Type'],
         credentials: true,
     },
 });
 
-// CORS setup for Express
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true); // Allow requests from allowed origins
+            callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
