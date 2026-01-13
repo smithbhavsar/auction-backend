@@ -145,6 +145,12 @@ function getMaxAllowedBid(captain) {
     const slotsLeft = remainingSlots(captain);
     return captain.points - (slotsLeft - 1) * BASE_VALUE;
 }
+function noPlayersLeft() {
+    return (
+        !currentPlayer ||
+        randomizedPlayers.every(player => player.sold)
+    );
+}
 
 function emitPassAvailability() {
     io.emit('passAvailability', {
@@ -251,14 +257,6 @@ io.on('connection', (socket) => {
         
         moveToNextPlayer();
     });
-
-
-    function noPlayersLeft() {
-        return (
-            !currentPlayer ||
-            randomizedPlayers.every(player => player.sold)
-        );
-    }
 
     function moveToNextPlayer() {
         currentPlayerIndex++;
