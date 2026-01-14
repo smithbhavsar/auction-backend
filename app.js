@@ -101,6 +101,11 @@ let players = [
   { name: "Neev Pujara", house: "C/1003", mobile: "9825938221", skills: "All Rounder", baseValue: 10000 },
   { name: "Jinesh Shah", house: "A/501", mobile: "9821707072", skills: "All Rounder", baseValue: 10000 },
   { name: "Prakash Donga", house: null, mobile: "9429052994", skills: "All Rounder", baseValue: 10000 },
+  {name: "Ravi Sonagra",house: null,mobile: null,skills: null,baseValue: 10000},
+  {name: "Aarush",house: null,mobile: null,skills: null,baseValue: 10000},
+  {name: "Naveen",house: null,mobile: null,skills: null,baseValue: 10000},
+  {name: "Dr. Janmesh Shah",house: null,mobile: null,skills: null,baseValue: 10000},
+  {name: "Raj Sharma",house: null,mobile: null,skills: null,baseValue: 10000}
 ];
 
 
@@ -114,7 +119,9 @@ let captains = [
     { id: 3, name: 'Tushar Ghelani', points: 1000000, team: [] },
     { id: 4, name: 'Parv Gupta', points: 1000000, team: [] },
     { id: 5, name: 'Dinesh Bansal', points: 1000000, team: [] },
-    { id: 6, name: 'Mukesh Agrawal', points: 1000000, team: [] }
+    { id: 6, name: 'Mukesh Agrawal', points: 1000000, team: [] },
+    { id: 7, name: 'Ashok Sharma', points: 1000000, team: [] },
+    { id: 8, name: 'Atul Narang', points: 1000000, team: [] }
 ];
 
 allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
@@ -126,7 +133,7 @@ let currentPlayerIndex = 0;
 let currentPlayer = randomizedPlayers[currentPlayerIndex];
 let passedPlayers = [];
 const BASE_VALUE = 10000;
-const MAX_TEAM_SIZE = 10;
+const MAX_TEAM_SIZE = 8;
 
 allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
 
