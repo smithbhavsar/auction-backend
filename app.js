@@ -133,7 +133,7 @@ let currentPlayerIndex = 0;
 let currentPlayer = randomizedPlayers[currentPlayerIndex];
 let passedPlayers = [];
 const BASE_VALUE = 10000;
-const MAX_TEAM_SIZE = 8;
+const MAX_TEAM_SIZE = 7;
 
 allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
 
