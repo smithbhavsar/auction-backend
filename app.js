@@ -121,7 +121,7 @@ let captains = [
     { id: 5, name: 'Dinesh Bansal', points: 1000000, team: [] },
     { id: 6, name: 'Mukesh Agrawal', points: 1000000, team: [] },
     { id: 7, name: 'Ashok Sharma', points: 1000000, team: [] },
-    { id: 8, name: 'Atul Narang', points: 1000000, team: [] }
+    { id: 8, name: 'Amit Gajjar', points: 1000000, team: [] }
 ];
 
 allPlayers = allPlayers.filter(player => !captains.some(captain => captain.name === player.name));
